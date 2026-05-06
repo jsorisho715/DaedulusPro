@@ -63,6 +63,17 @@ const Icon = ({ name, size = 18, color = "currentColor", strokeWidth = 1.5, styl
     car:         <><path d="M6 11h12l-1.4-4.2A2 2 0 0 0 14.7 5H9.3a2 2 0 0 0-1.9 1.8z"/><path d="M3 11h18v6H3z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/></>,
     message:     <><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>,
     star:        <><path d="m12 2 3.1 6.3 7 1-5 4.9 1.2 7-6.3-3.3-6.3 3.3 1.2-7-5-4.9 7-1z"/></>,
+    wifi:        <><path d="M5 13a10 10 0 0 1 14 0"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M2 8.8a15 15 0 0 1 20 0"/><circle cx="12" cy="20" r="1"/></>,
+    trophy:      <><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3a2 2 0 0 1 0 4 4 4 0 0 1-3 2"/><path d="M7 5H4a2 2 0 0 0 0 4 4 4 0 0 0 3 2"/></>,
+    mic:         <><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></>,
+    chip:        <><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></>,
+    compass:     <><circle cx="12" cy="12" r="9"/><path d="m16 8-2 6-6 2 2-6 6-2z"/></>,
+    medal:       <><path d="M7 4 5 8l4 6h6l4-6-2-4z"/><circle cx="12" cy="17" r="5"/><path d="M12 14v6"/></>,
+    target:      <><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></>,
+    flame:       <><path d="M8.5 14a3.5 3.5 0 1 0 7 0c0-2-1-3-2-4-1.5-1.5-1-3.5 0-5-2 .5-5 2.5-5 5 0 1 0 2-1 2.5"/></>,
+    leaf:        <><path d="M11 20A7 7 0 0 1 4 13c0-5 3-9 9-11 1 4 1 7 0 10s-3 5-7 7"/><path d="M2 22c4-2 6-5 7-9"/></>,
+    bolt:        <><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" fill="currentColor" stroke="none"/></>,
+    pin:         <><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"/><circle cx="12" cy="9" r="2.5" fill="currentColor"/></>,
   };
   const p = paths[name];
   if (!p) return null;

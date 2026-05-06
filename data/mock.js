@@ -295,5 +295,214 @@ window.MOCK = (function () {
     factoringNet: 2688,
   };
 
-  return { VENDOR, TEAM, PMCS, PROPERTIES, WOS, BIDS, DOCS, ONBOARDING, TODAY_DISPATCH, INVOICE };
+  // ──────────────────────────────────────────────────────────────────────
+  // FIELD APP DATA — templates, queue, time tracking, gamification, settings
+  // Drives screens/Field.jsx mobile app. Each work order in the field is
+  // backed by a template that defines the checklist + close-out method per
+  // task (check / photo / comment / measurement / scan).
+  // ──────────────────────────────────────────────────────────────────────
+
+  const FIELD_TEMPLATES = {
+    // --- Access Control: HID Signo reader replacement (matches WO-3026) ---
+    "tpl_access_reader": {
+      id: "tpl_access_reader", category: "Access Control",
+      label: "Access control reader — replace",
+      color: "var(--bronze)", icon: "key",
+      duration: "75 min",
+      materials: [
+        { p: "HID Signo 20 — Mullion",   qty: 1, unit: "ea",  cost: 248 },
+        { p: "Wiegand 22/6 cable",        qty: 8, unit: "ft",  cost: 22  },
+        { p: "Tap connectors",            qty: 4, unit: "ea",  cost: 6   },
+        { p: "Mullion mount kit",         qty: 1, unit: "ea",  cost: 32  },
+      ],
+      tasks: [
+        { id: "t1", kind: "check",       label: "Confirm reader make/model on site",                  required: true,  hint: "HID Signo 20, P/N 20NKS-T0" },
+        { id: "t2", kind: "measurement", label: "Test failed reader at controller (multimeter)",      required: true,  hint: "Expect 12 VDC ± 0.5",  unit: "VDC", expect: "12 ± 0.5" },
+        { id: "t3", kind: "photo",       label: "Photo of existing wiring before disconnect",         required: true,  count: 2 },
+        { id: "t4", kind: "check",       label: "De-energize circuit at controller",                  required: true },
+        { id: "t5", kind: "comment",     label: "Note any unusual conditions found",                  required: false, hint: "Corrosion, water ingress, prior splice…" },
+        { id: "t6", kind: "check",       label: "Pull replacement HID Signo from truck",              required: true },
+        { id: "t7", kind: "check",       label: "Mount, terminate Wiegand + 12V power",               required: true },
+        { id: "t8", kind: "photo",       label: "Photo of new install (front + back)",                required: true,  count: 2 },
+        { id: "t9", kind: "scan",        label: "Test mobile credential read (3 cards)",              required: true,  count: 3 },
+        { id: "t10", kind: "check",      label: "Reactivate door in C•Cure 9000",                     required: true },
+      ],
+    },
+    // --- IoT: Smart thermostat / IoT hub install (matches WO-3021 doorbell-cam vibe) ---
+    "tpl_iot_thermostat": {
+      id: "tpl_iot_thermostat", category: "IoT",
+      label: "IoT thermostat install + pair",
+      color: "var(--slateblue)", icon: "chip",
+      duration: "60 min",
+      materials: [
+        { p: "ecobee SmartThermostat",    qty: 1, unit: "ea",  cost: 218 },
+        { p: "Power adapter (24 VAC)",    qty: 1, unit: "ea",  cost: 18  },
+        { p: "Wall plate trim",           qty: 1, unit: "ea",  cost: 12  },
+        { p: "Wire labels (kit)",         qty: 1, unit: "kit", cost: 4   },
+      ],
+      tasks: [
+        { id: "t1", kind: "photo",       label: "Photo of existing thermostat + wiring",              required: true,  count: 1 },
+        { id: "t2", kind: "check",       label: "Power off HVAC at breaker",                          required: true,  hint: "Test with non-contact tester before touching wires" },
+        { id: "t3", kind: "comment",     label: "Identify wire colors (R / W / Y / G / C)",            required: true,  hint: "Type out the mapping you see" },
+        { id: "t4", kind: "check",       label: "Mount new device, level",                            required: true },
+        { id: "t5", kind: "photo",       label: "Photo of completed install",                         required: true,  count: 1 },
+        { id: "t6", kind: "scan",        label: "Pair device to Daedalus IoT cloud",                  required: true,  hint: "Scan QR on back of unit", count: 1 },
+        { id: "t7", kind: "measurement", label: "Test heat call → measure temp rise (10 min)",        required: true,  unit: "°F", expect: "+2.0 to +4.0" },
+        { id: "t8", kind: "measurement", label: "Test cool call → measure temp drop (10 min)",        required: true,  unit: "°F", expect: "-2.0 to -4.0" },
+        { id: "t9", kind: "check",       label: "Confirm app shows live readings on resident phone",  required: true },
+        { id: "t10", kind: "comment",    label: "Customer-facing summary (auto-sent to resident)",    required: false },
+      ],
+    },
+    // --- WiFi: Access point install (PRD template "WiFi access point install") ---
+    "tpl_wifi_ap": {
+      id: "tpl_wifi_ap", category: "WiFi",
+      label: "WiFi access point install",
+      color: "var(--olive)", icon: "wifi",
+      duration: "90 min",
+      materials: [
+        { p: "Ubiquiti U7 Pro WiFi 7",    qty: 1, unit: "ea",  cost: 279 },
+        { p: "PoE+ injector (60 W)",      qty: 1, unit: "ea",  cost: 32  },
+        { p: "Cat6 patch cable (50 ft)",  qty: 1, unit: "ea",  cost: 24  },
+        { p: "AP ceiling bracket",        qty: 1, unit: "ea",  cost: 14  },
+      ],
+      tasks: [
+        { id: "t1", kind: "photo",       label: "Photo of mounting location pre-install",             required: true,  count: 1 },
+        { id: "t2", kind: "check",       label: "Pull Cat6 from IDF to AP location",                  required: true },
+        { id: "t3", kind: "measurement", label: "Cable test — continuity, length, attenuation",       required: true,  unit: "ft / dB", expect: "≤ 295 ft, ≤ 3 dB" },
+        { id: "t4", kind: "check",       label: "Mount AP to ceiling, terminate Cat6, plug PoE",      required: true },
+        { id: "t5", kind: "scan",        label: "Adopt AP in UniFi controller",                       required: true,  hint: "Scan device QR or enter MAC", count: 1 },
+        { id: "t6", kind: "measurement", label: "Signal strength at 6 reference points",              required: true,  unit: "dBm", expect: "≥ -65 dBm at 25 ft" },
+        { id: "t7", kind: "photo",       label: "Heatmap screenshot from UniFi mobile",               required: true,  count: 1 },
+        { id: "t8", kind: "check",       label: "Disable old AP in controller",                       required: true },
+        { id: "t9", kind: "comment",     label: "Customer-facing summary",                            required: false },
+      ],
+    },
+  };
+
+  // Today's dispatch queue for the active tech (Miguel Padilla).
+  // Each entry references a template + a property + the WO ID.
+  const FIELD_QUEUE = [
+    { id: "WO-3026", template: "tpl_access_reader",  property: "p_solano",  scheduled: "2026-05-06T13:00:00", urgency: "urgent",  status: "active",    distanceMi: 3.4,  etaMin: 9,  contact: "Diego Martín · Maint Sup", phone: "(602) 555-0211", note: "Clubhouse main entry. Fob box on side wall." },
+    { id: "WO-3038", template: "tpl_iot_thermostat", property: "p_aria",    scheduled: "2026-05-06T15:30:00", urgency: "routine", status: "scheduled", distanceMi: 7.8,  etaMin: 22, contact: "Marcus Greene · PM",       phone: "(602) 555-0144", note: "Vacant turn unit 304. Lockbox 4231." },
+    { id: "WO-3036", template: "tpl_wifi_ap",        property: "p_oldtown", scheduled: "2026-05-06T17:00:00", urgency: "routine", status: "scheduled", distanceMi: 12.1, etaMin: 31, contact: "Marcus Greene · PM",       phone: "(602) 555-0144", note: "Amenity center IDF — keys at concierge." },
+    { id: "WO-3033", template: "tpl_access_reader",  property: "p_verdant", scheduled: "2026-05-06T11:00:00", urgency: "routine", status: "completed", distanceMi: 0,    etaMin: 0,  contact: "Heather Quinn · PM",       phone: "(602) 555-0167", note: "Completed 11:42 AM. Sign-off Diego M." },
+  ];
+
+  const FIELD_TIME = {
+    today: { worked: 4.7, billable: 4.2, breakMin: 28 },
+    week:  { worked: 31.4, billable: 28.1, target: 40 },
+    activeTimer: { woId: "WO-3026", startedAt: "2026-05-06T08:14:00", elapsedSec: 17640 }, // 4h54m
+    entries: [
+      { id: "te1", woId: "WO-3033", label: "Pool gate self-closer", clockIn: "07:32", clockOut: "08:04", durMin: 32, kind: "job" },
+      { id: "te2", woId: null,        label: "Travel to Solano Lofts",  clockIn: "08:04", clockOut: "08:14", durMin: 10, kind: "travel" },
+      { id: "te3", woId: "WO-3026", label: "Access reader — Solano",  clockIn: "08:14", clockOut: null,     durMin: 294, kind: "job", active: true },
+      { id: "te4", woId: null,        label: "Lunch break",             clockIn: "11:48", clockOut: "12:16", durMin: 28, kind: "break" },
+    ],
+  };
+
+  // Gamification — badges, ranks, cash rewards, weekly quest.
+  // Cash rewards apply on unlock; net-payable to tech via Daedalus AR.
+  const FIELD_BADGES = [
+    { id: "b_first_signoff", name: "First Sign-Off",        desc: "Complete your first customer-signed job.",                    icon: "medal",     color: "var(--bronze)",     reward: 25,  unlocked: true,  earnedAt: "2025-11-14", progress: { c: 1,  r: 1  } },
+    { id: "b_perfect_week",   name: "Perfect Week",          desc: "5 jobs in a week, all on-time, all 5-star resident scores.", icon: "trophy",    color: "var(--amber)",      reward: 100, unlocked: true,  earnedAt: "2026-02-08", progress: { c: 5,  r: 5  } },
+    { id: "b_photo_pro",      name: "Photo Pro",             desc: "Submit 100 jobs with all required photos on first try.",     icon: "camera",    color: "var(--olive)",      reward: 50,  unlocked: true,  earnedAt: "2026-03-22", progress: { c: 100, r: 100 } },
+    { id: "b_iot_specialist", name: "IoT Specialist",        desc: "Complete 25 IoT-template jobs.",                              icon: "chip",      color: "var(--slateblue)",  reward: 75,  unlocked: false, progress: { c: 18, r: 25 } },
+    { id: "b_wifi_whisperer", name: "WiFi Whisperer",        desc: "Pass cable-test threshold on 50 WiFi installs.",              icon: "wifi",      color: "var(--olive)",      reward: 75,  unlocked: false, progress: { c: 31, r: 50 } },
+    { id: "b_emergency_ace",  name: "Emergency Ace",         desc: "Respond to 10 emergency dispatches under 90 min ETA.",       icon: "bolt",      color: "var(--terracotta)", reward: 150, unlocked: false, progress: { c: 7,  r: 10 } },
+    { id: "b_streak_30",      name: "30-Day Streak",         desc: "Work 30 consecutive days with at least one closed job.",      icon: "flame",     color: "var(--amber)",      reward: 200, unlocked: false, progress: { c: 22, r: 30 } },
+    { id: "b_zero_callback",  name: "Zero Callback",         desc: "100 closed jobs with zero callbacks within warranty.",        icon: "shield",    color: "var(--olive)",      reward: 250, unlocked: false, progress: { c: 64, r: 100 } },
+    { id: "b_mentor",         name: "Mentor",                desc: "Train 3 new techs through their first 10 jobs.",              icon: "users",     color: "var(--bronze)",     reward: 300, unlocked: false, progress: { c: 1,  r: 3  } },
+    { id: "b_mythic",         name: "Mythic",                desc: "Reach Elite tier with 500 lifetime closed jobs.",             icon: "wing",      color: "var(--bronze-deep)",reward: 1000, unlocked: false, progress: { c: 312, r: 500 }, special: true },
+  ];
+
+  const FIELD_LEADERBOARD = [
+    { id: "u_mp",  name: "Miguel Padilla",   metro: "Phoenix",   jobs30: 64, onTime: 0.97, csat: 4.92, you: true },
+    { id: "u_th",  name: "Tasha Holt",       metro: "Phoenix",   jobs30: 61, onTime: 0.95, csat: 4.88 },
+    { id: "u_jc",  name: "Jada Carter",      metro: "Phoenix",   jobs30: 58, onTime: 0.94, csat: 4.91 },
+    { id: "u_ow",  name: "Owen Whitaker",    metro: "Phoenix",   jobs30: 52, onTime: 0.93, csat: 4.85 },
+    { id: "u_rb",  name: "Ricky Bennett",    metro: "Phoenix",   jobs30: 49, onTime: 0.91, csat: 4.79 },
+  ];
+
+  // The active "quest of the week" — extra cash bonus on top of base pay.
+  const FIELD_QUEST = {
+    id: "qw_iot_blitz",
+    label: "IoT Blitz",
+    desc: "Complete 5 IoT-template jobs by Sunday 11:59 PM.",
+    progress: { c: 3, r: 5 },
+    reward: 50,
+    expires: "2026-05-10T23:59:00",
+  };
+
+  // Push-notification stream replayed in the phone frame demo.
+  // `at` is the elapsed-seconds since the demo "starts" — Field.jsx uses
+  // it to choreograph the slide-ins. Order matters.
+  const FIELD_NOTIFS = [
+    { id: "pn1", at: 2,  kind: "job",      icon: "workorder", color: "var(--bronze)",     title: "New job assigned",       body: "WO-3038 · Aria on Camelback · Smart lock pairing", route: "queue" },
+    { id: "pn2", at: 8,  kind: "message",  icon: "message",   color: "var(--slateblue)",  title: "Diego Martín · Solano",  body: "We left you the side door propped — see you in 10",  route: "job" },
+    { id: "pn3", at: 16, kind: "badge",    icon: "trophy",    color: "var(--amber)",      title: "Badge progress · 7/10",  body: "Emergency Ace — 3 more sub-90-min jobs to unlock $150",  route: "profile" },
+    { id: "pn4", at: 26, kind: "stock",    icon: "truck",     color: "var(--terracotta)", title: "Truck stock low",        body: "HID Signo 20 — 1 left. Reorder before next emergency.", route: "more" },
+    { id: "pn5", at: 38, kind: "schedule", icon: "schedule",  color: "var(--olive)",      title: "Tomorrow's schedule",    body: "4 jobs queued. Optimized route saves 32 min vs. raw order.", route: "queue" },
+  ];
+
+  // Tech profile — Miguel Padilla. Powers the gamified Profile page.
+  const FIELD_PROFILE = {
+    techId: "u_mp",
+    tier: "Preferred",                  // current tier
+    tierProgressToNext: 0.72,           // 72% to Elite
+    nextTier: "Elite",
+    rank: 1,                            // metro rank
+    rankOf: 47,
+    stats: {
+      jobs30: 64,
+      jobsLifetime: 312,
+      onTimeRate: 0.97,
+      csat: 4.92,
+      photoQuality: 0.98,
+      callbackRate: 0.012,
+      avgMinutesPerJob: 64,
+      streakDays: 22,
+    },
+    cash: {
+      lifetimeEarned: 1450,
+      pendingThisMonth: 175,
+      lastPayout: { amount: 100, date: "2026-04-30" },
+    },
+    redemptions: [
+      { id: "r1", date: "2026-04-30", amount: 100, label: "Perfect Week × 4 (April)",            status: "paid" },
+      { id: "r2", date: "2026-03-22", amount: 50,  label: "Photo Pro unlock",                     status: "paid" },
+      { id: "r3", date: "2026-02-08", amount: 100, label: "Perfect Week",                         status: "paid" },
+      { id: "r4", date: "2025-11-14", amount: 25,  label: "First Sign-Off",                       status: "paid" },
+    ],
+  };
+
+  // Default state for the in-app Settings page.
+  const FIELD_SETTINGS_DEFAULT = {
+    push: {
+      master: true,
+      newJobs: true,
+      customerMessages: true,
+      dispatcherAlerts: true,
+      badgeUpdates: true,
+      stockLow: true,
+    },
+    quietHours: { enabled: true, from: "21:00", to: "06:00" },
+    sound: true,
+    haptics: true,
+    biometric: true,
+    language: "en",
+    units: "imperial",
+    photoQuality: "hd",
+    offlinePack: "auto",
+    mapProvider: "google",
+    appearance: "system",
+    highContrast: false,
+    largeText: false,
+    truckAutoDeduct: true,
+  };
+
+  return {
+    VENDOR, TEAM, PMCS, PROPERTIES, WOS, BIDS, DOCS, ONBOARDING, TODAY_DISPATCH, INVOICE,
+    FIELD_TEMPLATES, FIELD_QUEUE, FIELD_TIME, FIELD_BADGES, FIELD_LEADERBOARD, FIELD_QUEST,
+    FIELD_NOTIFS, FIELD_PROFILE, FIELD_SETTINGS_DEFAULT,
+  };
 })();

@@ -291,3 +291,109 @@ a:hover { color: var(--bronze-deep); }
   display: inline-flex; align-items: center; justify-content: center;
   font-family: var(--serif); font-weight: 600;
 }
+
+/* ──────────────────────────────────────────────────────────────────────
+ * Field App — animations and motion utilities.
+ * Used by screens/Field.jsx for push notifications, badge unlocks,
+ * photo capture, vehicle pulse, slide-in views, and skeleton loaders.
+ * ────────────────────────────────────────────────────────────────────── */
+
+@keyframes fa-pushSlideIn {
+  from { opacity: 0; transform: translateY(-12px) scale(0.97); }
+  60%  { opacity: 1; transform: translateY(2px) scale(1.01); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes fa-pushSlideOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-14px) scale(0.96); }
+}
+
+@keyframes fa-flash {
+  0%   { opacity: 0; }
+  20%  { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+
+@keyframes fa-shutterPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(0.85); }
+}
+
+@keyframes fa-pulseRing {
+  0%   { transform: scale(0.92); opacity: 0.85; }
+  100% { transform: scale(1.6);  opacity: 0; }
+}
+.fa-pulse-ring {
+  position: absolute; inset: 0; border-radius: 999px;
+  border: 2px solid currentColor;
+  animation: fa-pulseRing 1800ms ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes fa-shimmer {
+  0%   { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+.fa-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(176, 134, 84, 0.18) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 400px 100%;
+  animation: fa-shimmer 1600ms linear infinite;
+}
+
+@keyframes fa-sheetUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.fa-sheet-anim { animation: fa-sheetUp 280ms cubic-bezier(0.32, 0.72, 0, 1); }
+
+@keyframes fa-badgePop {
+  0%   { transform: scale(0.6) rotate(-8deg); opacity: 0; }
+  60%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+@keyframes fa-confetti {
+  0%   { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--cx, 0), var(--cy, 80px)) rotate(var(--cr, 220deg)); opacity: 0; }
+}
+
+@keyframes fa-checkBounce {
+  0%   { transform: scale(0.4); opacity: 0; }
+  60%  { transform: scale(1.18); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fa-progressShine {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(220%); }
+}
+
+@keyframes fa-vehiclePulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(176, 134, 84, 0.6)); }
+  50%      { transform: scale(1.08); filter: drop-shadow(0 0 12px rgba(176, 134, 84, 0.6)); }
+}
+
+@keyframes fa-dashFlow {
+  0%   { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -40; }
+}
+
+@keyframes fa-skeleton {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 0.85; }
+}
+
+/* Reduced-motion safety: disable all field-app continuous loops. */
+@media (prefers-reduced-motion: reduce) {
+  .fa-pulse-ring,
+  .fa-shimmer { animation: none !important; }
+}
+
+/* Settings group rows: divider only between siblings, never at the top. */
+.fa-setting-row + .fa-setting-row { border-top: 1px solid var(--line); }
+
