@@ -28,6 +28,7 @@ import '../screens/Onboarding.jsx';
 import '../screens/Apply.jsx';
 import '../screens/Compliance.jsx';
 import '../screens/WorkOrders.jsx';
+import '../screens/BidsAndEstimates.jsx';
 import '../screens/Dispatcher.jsx';
 import '../screens/Field.jsx';
 import '../screens/Invoices.jsx';

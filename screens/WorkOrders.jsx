@@ -90,9 +90,9 @@ function WorkOrders({ onNav }) {
   );
 }
 
-function WODetail({ wo, onClose, onNav }) {
+function WODetail({ wo, onClose, onNav, initialTab }) {
   const M = window.MOCK;
-  const [tab, setTab] = React.useState(wo.status === "awaiting-bid" ? "bids" : "overview");
+  const [tab, setTab] = React.useState(initialTab || (wo.status === "awaiting-bid" ? "bids" : "overview"));
   const [showBidForm, setShowBidForm] = React.useState(false);
   const [showPTE, setShowPTE] = React.useState(false);
   const [showCO, setShowCO] = React.useState(false);
@@ -375,21 +375,8 @@ function WOOverview({ wo }) {
       <div className="muted" style={{ fontSize: 10, letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 600, marginBottom: 6 }}>Description</div>
       <p style={{ fontSize: 14, lineHeight: 1.6, color: "var(--text)", marginTop: 0 }}>{wo.desc}</p>
 
-      <div className="card" style={{ padding: 18, marginTop: 18, background: "linear-gradient(135deg, rgba(176,134,84,0.06), rgba(212,168,87,0.02))" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 6, background: "var(--bronze)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Icon name="sparkles" size={14}/>
-          </div>
-          <div className="h-serif" style={{ fontSize: 16 }}>AI Estimate</div>
-          <span className="pill pill-bronze">High confidence</span>
-        </div>
-        <div className="muted" style={{ fontSize: 12, marginBottom: 14 }}>Composed from photos, gate operator template, RSMeans labor for 85254, and your team's prior 14 gate jobs.</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
-          <Stat label="Labor" v={fmt$(1440)}/>
-          <Stat label="Materials" v={fmt$(1255)}/>
-          <Stat label="Travel + after-hours" v={fmt$(265)}/>
-          <Stat label="Suggested markup" v="12%"/>
-        </div>
+      <div style={{ marginTop: 18 }}>
+        <AIEstimatePanel wo={wo} mode="vendor"/>
       </div>
 
       <div className="muted" style={{ fontSize: 10, letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 600, marginTop: 22, marginBottom: 8 }}>Photos from PM</div>
@@ -399,6 +386,139 @@ function WOOverview({ wo }) {
             <span className="pill" style={{ position: "absolute", top: 6, left: 6, fontSize: 9, height: 18, background: "rgba(0,0,0,0.6)", color: "white" }}><Icon name="check" size={10}/> EXIF</span>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// Reusable AI Estimate panel (PRD §3.3.5 / §6.3).
+// mode = "vendor" — vendor sees their net + send-to-PM actions
+// mode = "ops"    — Daedalus Ops / PMC: photo callouts, markup slider, Approve / Send-to-human / Edit
+function AIEstimatePanel({ wo, mode = "vendor", onAction }) {
+  const est = wo?.aiEstimate || {
+    confidence: "high", labor: 1440, materials: 1255, travel: 265, markupPct: 12,
+    total: wo?.total || 0, netToVendor: Math.round((wo?.total || 0) * 0.9),
+    flaggedForReview: false, source: "Default template", callouts: [], version: 1,
+  };
+  const [markupPct, setMarkupPct] = React.useState(est.markupPct ?? 12);
+  const confLabel = est.confidence === "high" ? "High confidence"
+    : est.confidence === "medium" ? "Medium confidence"
+    : est.confidence === "low" ? "Low confidence" : "AI generating…";
+  const confPillClass = est.confidence === "high" ? "pill-bronze"
+    : est.confidence === "medium" ? "pill-warn"
+    : est.confidence === "low" ? "pill-warn" : "pill-info";
+  const confExplain = est.confidence === "low"
+    ? "Confidence is low because intake photos are missing or wall conditions are not visible. Recommend human review."
+    : est.confidence === "medium"
+    ? "Confidence is medium — partial photo coverage. Some assumptions made about adjacent conditions."
+    : est.confidence === "high"
+    ? "Confidence is high — photos, template, and prior-job history all align."
+    : "Awaiting first AI pass. Estimate will populate within ~10s.";
+  const subtotal = (est.labor || 0) + (est.materials || 0) + (est.travel || 0);
+  const markupAmt = Math.round(subtotal * (markupPct / 100));
+  const liveTotal = mode === "ops" ? subtotal + markupAmt : (est.total || 0);
+
+  return (
+    <div className="card" style={{ padding: 18, background: "linear-gradient(135deg, rgba(176,134,84,0.06), rgba(212,168,87,0.02))" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
+        <div style={{ width: 28, height: 28, borderRadius: 6, background: "var(--bronze)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Icon name="sparkles" size={14}/>
+        </div>
+        <div className="h-serif" style={{ fontSize: 16 }}>AI Estimate</div>
+        <span className={`pill ${confPillClass}`}>{confLabel}</span>
+        {est.flaggedForReview && <span className="pill pill-warn" style={{ fontSize: 10 }}>Flagged for review</span>}
+        {typeof est.version === "number" && est.version > 0 && (
+          <span className="muted mono" style={{ fontSize: 11, marginLeft: "auto" }}>v{est.version}</span>
+        )}
+      </div>
+      <div className="muted" style={{ fontSize: 12, marginBottom: 14, lineHeight: 1.5 }}>
+        {est.source || "Composed from photos, template, and prior-job history."}
+      </div>
+
+      {/* Photo callouts (Ops mode renders an annotated photo strip per PRD §6.3) */}
+      {mode === "ops" && (
+        <div style={{ marginBottom: 16 }}>
+          <div className="muted" style={{ fontSize: 10, letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 600, marginBottom: 6 }}>AI photo callouts</div>
+          <div style={{ position: "relative", aspectRatio: "16/9", borderRadius: 10, overflow: "hidden", border: "1px solid var(--line)", background: "linear-gradient(135deg, hsl(28, 22%, 28%), hsl(22, 30%, 18%))" }}>
+            {(est.callouts || []).map((c, i) => (
+              <div key={i} style={{ position: "absolute", left: `${c.x * 100}%`, top: `${c.y * 100}%`, transform: "translate(-50%,-50%)", display: "flex", alignItems: "center", gap: 6 }}>
+                <div style={{ width: 20, height: 20, borderRadius: 999, background: "var(--bronze)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 0 4px rgba(176,134,84,0.25)" }}>
+                  <span style={{ fontSize: 11, fontWeight: 700 }}>{i + 1}</span>
+                </div>
+                <span className="pill" style={{ background: "rgba(11,13,16,0.78)", color: "white", fontSize: 10, height: 20 }}>{c.label}</span>
+              </div>
+            ))}
+            {(!est.callouts || est.callouts.length === 0) && (
+              <div className="muted" style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "rgba(255,255,255,0.7)" }}>
+                No callouts yet — photos pending.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 12 }}>
+        <Stat label="Labor" v={fmt$(est.labor || 0)}/>
+        <Stat label="Materials" v={fmt$(est.materials || 0)}/>
+        <Stat label="Travel + after-hours" v={fmt$(est.travel || 0)}/>
+        <Stat label="Suggested markup" v={`${markupPct}%`}/>
+      </div>
+
+      <div className="hr" style={{ margin: "14px 0" }}/>
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <div className="muted" style={{ fontSize: 10, letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 600 }}>
+            {mode === "vendor" ? "Net to vendor" : "Estimate total"}
+          </div>
+          <div className="mono" style={{ fontFamily: "var(--serif)", fontSize: 24, fontWeight: 700, color: "var(--bronze)" }}>
+            {mode === "vendor" ? fmt$(est.netToVendor || 0) : fmt$(liveTotal)}
+          </div>
+          {mode === "vendor" && (
+            <div className="muted" style={{ fontSize: 11, marginTop: 2 }}>Total to PM {fmt$(est.total || 0)} · Daedalus fee {fmt$((est.total || 0) - (est.netToVendor || 0))}</div>
+          )}
+        </div>
+
+        {mode === "ops" && (
+          <div style={{ minWidth: 220, flex: 1 }}>
+            <div className="muted" style={{ fontSize: 10, letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 600, marginBottom: 6 }}>Markup band (PMC default 5–30%)</div>
+            <input
+              type="range" min={5} max={30} value={markupPct}
+              onChange={(e) => setMarkupPct(parseInt(e.target.value, 10))}
+              style={{ width: "100%", accentColor: "var(--bronze)" }}
+              aria-label="Markup percentage"
+            />
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--text-3)" }}>
+              <span>5%</span><span className="mono" style={{ color: "var(--bronze)", fontWeight: 700 }}>{markupPct}%</span><span>30%</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Confidence explanation */}
+      <div className="card" style={{ padding: 12, marginTop: 14, background: "var(--surface)", borderLeft: `3px solid ${est.confidence === "low" ? "var(--terracotta)" : est.confidence === "medium" ? "var(--amber)" : "var(--olive)"}` }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+          <Icon name="info" size={14} color="var(--text-3)" style={{ marginTop: 2, flexShrink: 0 }}/>
+          <div className="muted" style={{ fontSize: 12, lineHeight: 1.5 }}>{confExplain}</div>
+        </div>
+      </div>
+
+      {/* Action row */}
+      <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
+        {mode === "vendor" && (
+          <>
+            <button className="btn btn-primary btn-sm" onClick={() => onAction?.("send-to-pm")}><Icon name="mail" size={12}/> Send to PM</button>
+            <button className="btn btn-secondary btn-sm" onClick={() => onAction?.("edit")}><Icon name="edit" size={12}/> Edit lines</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => onAction?.("rerun")}><Icon name="refresh" size={12}/> Re-run AI</button>
+          </>
+        )}
+        {mode === "ops" && (
+          <>
+            <button className="btn btn-primary btn-sm" onClick={() => onAction?.("approve", { markupPct })}><Icon name="check" size={12}/> Approve and route to vendor</button>
+            <button className="btn btn-secondary btn-sm" onClick={() => onAction?.("human-review")}><Icon name="users" size={12}/> Send to human reviewer</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => onAction?.("edit")}><Icon name="edit" size={12}/> Edit estimate</button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -734,3 +854,5 @@ function BidForm({ wo, onClose }) {
 }
 
 window.WorkOrders = WorkOrders;
+window.WODetail = WODetail;
+window.AIEstimatePanel = AIEstimatePanel;

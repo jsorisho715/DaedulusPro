@@ -65,7 +65,7 @@ function App() {
   switch (route) {
     case "home":        screen = <Home role={effectiveRole} onNav={onNav}/>; break;
     case "workorders":  screen = <WorkOrders onNav={onNav}/>; break;
-    case "bids":        screen = <WorkOrders onNav={onNav}/>; break;
+    case "bids":        screen = <BidsAndEstimates onNav={onNav}/>; break;
     case "dispatcher":  screen = <Dispatcher onNav={onNav}/>; break;
     case "field":       screen = <Field onNav={onNav}/>; break;
     case "compliance":  screen = <Compliance onNav={onNav}/>; break;

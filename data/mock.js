@@ -71,6 +71,8 @@ window.MOCK = (function () {
 
   // statuses: unassigned, awaiting-bid, scheduled, en-route, on-site, completed, on-hold, awaiting-approval, invoiced, paid
   // urgency: emergency, urgent, routine, scheduled
+  // bidStatus (vendor pipeline, PRD §3.3.6): null | drafting | submitted | countered | awarded | lost | expired
+  // aiEstimate (PRD §3.3.5): { confidence, total, labor, materials, travel, markupPct, netToVendor, version, generatedAt, callouts, flaggedForReview, source }
   const WOS = [
     {
       id: "WO-3041", title: "Front gate operator failing intermittently", category: "Gate", urgency: "urgent",
@@ -80,6 +82,16 @@ window.MOCK = (function () {
       desc: "North entry vehicle gate has intermittent reverse-on-close. Hits the safety loop sporadically. Pedestrian gate functioning. Suspect bad photo eye + worn rack pinion.",
       createdBy: "Sasha Whitfield (PM)", createdAt: "2026-05-02T09:14:00",
       photos: 4, bidsCount: 3, mine: { submitted: false, draft: true },
+      bidStatus: "drafting", bidExpiresAt: "2026-05-06T17:00:00", myBidAmount: 4280, aiVsMineDelta: 0,
+      aiEstimate: {
+        confidence: "high", version: 2, generatedAt: "2026-05-02T09:18:00",
+        labor: 1440, materials: 1255, travel: 265, markupPct: 12, total: 4280, netToVendor: 3850,
+        flaggedForReview: false, source: "Photos · gate operator template · RSMeans 85254 · 14 prior gate jobs",
+        callouts: [
+          { x: 0.30, y: 0.42, label: "fractured photo eye lens" },
+          { x: 0.62, y: 0.71, label: "worn rack pinion gear" },
+        ],
+      },
     },
     {
       id: "WO-3038", title: "Smart lock pairing — 12 units", category: "Access Control", urgency: "routine",
@@ -89,6 +101,13 @@ window.MOCK = (function () {
       desc: "Re-pair Schlage Encode Plus locks in 12 turn units after WiFi mesh cutover. Confirm Z-Wave handshake to Aria's Yardi-side IoT hub. PTE not required (vacant turn units).",
       createdBy: "Marcus Greene (PM)", createdAt: "2026-05-01T13:22:00",
       photos: 0, bidsCount: 0,
+      bidStatus: "awarded", bidExpiresAt: null, myBidAmount: 3120, aiVsMineDelta: 0,
+      aiEstimate: {
+        confidence: "high", version: 1, generatedAt: "2026-05-01T13:30:00",
+        labor: 1620, materials: 1080, travel: 120, markupPct: 11, total: 3120, netToVendor: 2810,
+        flaggedForReview: false, source: "Access-control template · 12-unit batch · Aria Yardi IoT hub",
+        callouts: [],
+      },
     },
     {
       id: "WO-3036", title: "Mesh AP swap — Bldg 2 amenity center", category: "WiFi", urgency: "routine",
@@ -98,6 +117,13 @@ window.MOCK = (function () {
       desc: "Replace 3 EOL Ruckus APs with Cambium XV2-2T. Re-tune coverage in the gym corner. Amenity coverage trace included.",
       createdBy: "Marcus Greene (PM)", createdAt: "2026-04-30T09:00:00",
       photos: 6, bidsCount: 0,
+      bidStatus: "awarded", bidExpiresAt: null, myBidAmount: 1860, aiVsMineDelta: 0,
+      aiEstimate: {
+        confidence: "high", version: 1, generatedAt: "2026-04-30T09:08:00",
+        labor: 720, materials: 940, travel: 80, markupPct: 10, total: 1860, netToVendor: 1690,
+        flaggedForReview: false, source: "WiFi AP install template · Cambium XV2-2T price feed",
+        callouts: [],
+      },
     },
     {
       id: "WO-3033", title: "Pool gate self-closer broken (life-safety)", category: "Gate", urgency: "emergency",
@@ -107,6 +133,13 @@ window.MOCK = (function () {
       desc: "Self-closing pool gate hardware failed. Replaced LCN 1461 closer + hinges. Re-tested at 3 lb close pull.",
       createdBy: "On-call dispatch (auto)", createdAt: "2026-05-03T18:11:00",
       photos: 8, bidsCount: 0,
+      bidStatus: "awarded", bidExpiresAt: null, myBidAmount: 612, aiVsMineDelta: 0,
+      aiEstimate: {
+        confidence: "high", version: 1, generatedAt: "2026-05-03T18:14:00",
+        labor: 290, materials: 220, travel: 80, markupPct: 8, total: 612, netToVendor: 565,
+        flaggedForReview: false, source: "Emergency gate-closer template · life-safety SLA premium",
+        callouts: [],
+      },
     },
     {
       id: "WO-3029", title: "Camera replacements — 4 corridor cams", category: "Low-Voltage", urgency: "routine",
@@ -116,6 +149,13 @@ window.MOCK = (function () {
       desc: "Replaced 4 Hanwha PNV-A6081R cameras with refreshed PoE drops, retuned NVR retention to 30 days.",
       createdBy: "Lila Tran (PM)", createdAt: "2026-04-26T11:40:00",
       photos: 11, bidsCount: 0,
+      bidStatus: "awarded", bidExpiresAt: null, myBidAmount: 2410, aiVsMineDelta: 0,
+      aiEstimate: {
+        confidence: "high", version: 1, generatedAt: "2026-04-26T11:48:00",
+        labor: 960, materials: 1248, travel: 0, markupPct: 8, total: 2410, netToVendor: 2160,
+        flaggedForReview: false, source: "Camera-replace template · Hanwha PNV-A6081R catalog",
+        callouts: [],
+      },
     },
     {
       id: "WO-3026", title: "Access control reader — clubhouse main entry", category: "Access Control", urgency: "urgent",
@@ -125,6 +165,15 @@ window.MOCK = (function () {
       desc: "HID Signo reader at clubhouse main door not reading mobile credentials. Wired tested at controller, suspect reader failure.",
       createdBy: "Diego Martín (Maint Sup)", createdAt: "2026-05-04T08:42:00",
       photos: 2, bidsCount: 0,
+      bidStatus: "awarded", bidExpiresAt: null, myBidAmount: 980, aiVsMineDelta: 0,
+      aiEstimate: {
+        confidence: "high", version: 1, generatedAt: "2026-05-04T08:46:00",
+        labor: 360, materials: 420, travel: 80, markupPct: 12, total: 980, netToVendor: 880,
+        flaggedForReview: false, source: "Access-reader template · HID Signo 20 catalog",
+        callouts: [
+          { x: 0.50, y: 0.45, label: "reader LED dark" },
+        ],
+      },
     },
     {
       id: "WO-3024", title: "Recurring leak at gym water fountain", category: "Plumbing", urgency: "routine",
@@ -134,6 +183,15 @@ window.MOCK = (function () {
       desc: "Bottle-fill fountain leaking from supply elbow. Replace stop + flex line.",
       createdBy: "Heather Quinn (PM)", createdAt: "2026-05-02T16:30:00",
       photos: 1, bidsCount: 0,
+      bidStatus: "awarded", bidExpiresAt: null, myBidAmount: 540, aiVsMineDelta: 0,
+      aiEstimate: {
+        confidence: "medium", version: 1, generatedAt: "2026-05-02T16:34:00",
+        labor: 240, materials: 180, travel: 60, markupPct: 14, total: 540, netToVendor: 470,
+        flaggedForReview: false, source: "Plumbing template · only 1 photo — wall conditions unknown",
+        callouts: [
+          { x: 0.45, y: 0.66, label: "supply elbow drip" },
+        ],
+      },
     },
     {
       id: "WO-3021", title: "Doorbell cameras — 8 unit pilot", category: "IoT", urgency: "routine",
@@ -143,6 +201,96 @@ window.MOCK = (function () {
       desc: "Install 8 Aiphone IXG-DM7 doorbell cams. Tie into resident app. PTE required for each.",
       createdBy: "Marcus Greene (PM)", createdAt: "2026-05-04T07:00:00",
       photos: 0, bidsCount: 0,
+      bidStatus: "submitted", bidExpiresAt: "2026-05-08T17:00:00", myBidAmount: 1640, aiVsMineDelta: 0,
+      aiEstimate: {
+        confidence: "low", version: 1, generatedAt: "2026-05-04T07:08:00",
+        labor: 720, materials: 760, travel: 60, markupPct: 12, total: 1640, netToVendor: 1480,
+        flaggedForReview: true, source: "IoT template — 0 photos available, awaiting PM intake images",
+        callouts: [],
+      },
+    },
+  ];
+
+  // BIDS_PIPELINE — historical / closed-out vendor bid pipeline entries that
+  // round out the Bids tab beyond the live WOs above. Lost / expired / awarded
+  // bids that no longer have a live WO record but still belong in the pipeline.
+  const BIDS_PIPELINE = [
+    {
+      id: "BP-2204", woRef: "WO-3018", title: "Garage roll-up door operator service",
+      property: "p_canyon", category: "Gate", urgency: "routine",
+      bidStatus: "lost", submittedAt: "2026-04-22T11:14:00", decidedAt: "2026-04-25T09:00:00",
+      myBidAmount: 2840, aiEstimateTotal: 2960, winningBidAmount: 2410, winner: "Apex Mechanical",
+      qualityScore: 88, expiresAt: null, lossReason: "Underbid by 15% — Apex absorbed travel.",
+    },
+    {
+      id: "BP-2196", woRef: "WO-3014", title: "Boiler room access door — re-key + master",
+      property: "p_palomar", category: "Locksmith", urgency: "urgent",
+      bidStatus: "awarded", submittedAt: "2026-04-19T08:42:00", decidedAt: "2026-04-19T15:30:00",
+      myBidAmount: 1180, aiEstimateTotal: 1180, winningBidAmount: 1180, winner: "Daedalus",
+      qualityScore: 94, expiresAt: null, lossReason: null,
+    },
+    {
+      id: "BP-2189", woRef: "WO-3009", title: "Mailroom CCTV NVR upgrade",
+      property: "p_oldtown", category: "Low-Voltage", urgency: "routine",
+      bidStatus: "expired", submittedAt: null, decidedAt: null,
+      myBidAmount: null, aiEstimateTotal: 4120, winningBidAmount: null, winner: null,
+      qualityScore: null, expiresAt: "2026-04-12T17:00:00", lossReason: "Bid window closed before draft submitted.",
+    },
+    {
+      id: "BP-2182", woRef: "WO-3004", title: "Building 2 secondary entry intercom",
+      property: "p_solano", category: "Access Control", urgency: "routine",
+      bidStatus: "countered", submittedAt: "2026-04-10T14:22:00", decidedAt: null,
+      myBidAmount: 3640, aiEstimateTotal: 3450, winningBidAmount: null, winner: null,
+      qualityScore: 86, expiresAt: "2026-05-09T17:00:00",
+      lossReason: null, counterAmount: 3300, counterNote: "PM countered at $3,300; awaiting our response.",
+    },
+  ];
+
+  // ESTIMATES_QUEUE — vendor-side AI estimates queue (PRD §3.3.5 vendor POV).
+  // estStatus: ai-generating | draft | pending-review | ready-to-send | sent | change-order
+  const ESTIMATES_QUEUE = [
+    {
+      id: "EST-4012", woRef: "WO-3041", title: "Front gate operator — competitive bid draft",
+      property: "p_canyon", category: "Gate",
+      estStatus: "ready-to-send", confidence: "high", total: 4280, netToVendor: 3850,
+      lastRevisionAt: "2026-05-03T18:42:00", revisionAuthor: "Elena Sato (Estimator)", version: 2,
+      flaggedForReview: false,
+    },
+    {
+      id: "EST-4011", woRef: "WO-3021", title: "Doorbell cameras — pilot install",
+      property: "p_aria", category: "IoT",
+      estStatus: "pending-review", confidence: "low", total: 1640, netToVendor: 1480,
+      lastRevisionAt: "2026-05-04T07:08:00", revisionAuthor: "Daedalus AI", version: 1,
+      flaggedForReview: true, flagReason: "Confidence below threshold — 0 photos uploaded yet.",
+    },
+    {
+      id: "EST-4009", woRef: "WO-3024", title: "Gym water-fountain recurring leak",
+      property: "p_sage", category: "Plumbing",
+      estStatus: "sent", confidence: "medium", total: 540, netToVendor: 470,
+      lastRevisionAt: "2026-05-02T16:34:00", revisionAuthor: "Daedalus AI", version: 1,
+      flaggedForReview: false,
+    },
+    {
+      id: "EST-4007", woRef: "WO-3036", title: "Amenity AP swap — change order delta",
+      property: "p_oldtown", category: "WiFi",
+      estStatus: "change-order", confidence: "medium", total: 410, netToVendor: 360,
+      lastRevisionAt: "2026-05-04T11:20:00", revisionAuthor: "Owen Whitaker (tech)", version: 2,
+      flaggedForReview: false,
+      coDelta: 410, coReason: "Discovered failed PoE injector in IDF — needs replacement to complete.",
+    },
+    {
+      id: "EST-4006", woRef: null, title: "Solano clubhouse — reader retrofit (pre-bid draft)",
+      property: "p_solano", category: "Access Control",
+      estStatus: "draft", confidence: "medium", total: 2240, netToVendor: 2010,
+      lastRevisionAt: "2026-05-04T16:10:00", revisionAuthor: "Elena Sato (Estimator)", version: 1,
+      flaggedForReview: false,
+    },
+    {
+      id: "EST-4005", woRef: null, title: "Verdant pool deck — emergency lighting refresh",
+      property: "p_verdant", category: "Electrical",
+      estStatus: "ai-generating", confidence: "—", total: null, netToVendor: null,
+      lastRevisionAt: "2026-05-05T09:02:00", revisionAuthor: "Daedalus AI", version: 0,
+      flaggedForReview: false,
     },
   ];
 
@@ -501,7 +649,7 @@ window.MOCK = (function () {
   };
 
   return {
-    VENDOR, TEAM, PMCS, PROPERTIES, WOS, BIDS, DOCS, ONBOARDING, TODAY_DISPATCH, INVOICE,
+    VENDOR, TEAM, PMCS, PROPERTIES, WOS, BIDS, BIDS_PIPELINE, ESTIMATES_QUEUE, DOCS, ONBOARDING, TODAY_DISPATCH, INVOICE,
     FIELD_TEMPLATES, FIELD_QUEUE, FIELD_TIME, FIELD_BADGES, FIELD_LEADERBOARD, FIELD_QUEST,
     FIELD_NOTIFS, FIELD_PROFILE, FIELD_SETTINGS_DEFAULT,
   };

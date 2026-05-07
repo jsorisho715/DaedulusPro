@@ -64,24 +64,26 @@ function PMC({ onNav }) {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 2, borderBottom: "1px solid var(--line)", marginBottom: 22 }}>
+      <div style={{ display: "flex", gap: 2, borderBottom: "1px solid var(--line)", marginBottom: 22, overflowX: "auto" }}>
         {[
           { k: "portfolio", l: "Portfolio map", icon: "location" },
           { k: "feed",      l: "PMS sync", icon: "refresh" },
+          { k: "estimates", l: "AI estimate review", icon: "sparkles" },
           { k: "vendors",   l: "Vendor scorecards", icon: "shield" },
           { k: "csat",      l: "Resident pulse", icon: "sparkles" },
         ].map(t => (
           <button key={t.k} onClick={() => setTab(t.k)} style={{
-            padding: "10px 18px", border: 0, borderBottom: `2px solid ${tab === t.k ? "var(--bronze)" : "transparent"}`,
+            padding: "10px 18px", minHeight: 44, border: 0, borderBottom: `2px solid ${tab === t.k ? "var(--bronze)" : "transparent"}`,
             background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600,
             color: tab === t.k ? "var(--text)" : "var(--text-3)",
-            display: "flex", alignItems: "center", gap: 8, marginBottom: -1,
+            display: "flex", alignItems: "center", gap: 8, marginBottom: -1, whiteSpace: "nowrap",
           }}><Icon name={t.icon} size={14}/> {t.l}</button>
         ))}
       </div>
 
       {tab === "portfolio" && <Portfolio onOpen={setOpenProp}/>}
       {tab === "feed"      && <SyncFeed syncing={syncing} onSyncNow={onSyncNow} lastSyncMin={lastSyncMin}/>}
+      {tab === "estimates" && <OpsEstimateReview/>}
       {tab === "vendors"   && <VendorScorecards/>}
       {tab === "csat"      && <ResidentPulse/>}
 
@@ -975,6 +977,100 @@ function ResidentPulse() {
           <div style={{ fontSize: 12, fontWeight: 600, color: "var(--olive)" }}>↗ Insight</div>
           <div style={{ fontSize: 12, marginTop: 4, lineHeight: 1.5 }}>Gate-related complaints down 61% since deploying Daedalus on-call rotation at Aria on Camelback.</div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ── AI Estimate Review (Ops / PMC) — PRD §6.3 ──
+// Daedalus Ops + PMC review queue. AI estimates flagged for human review,
+// or any low-confidence AI estimate sitting between the photo intake and the
+// vendor-routing step. Renders the shared AIEstimatePanel with mode="ops".
+function OpsEstimateReview() {
+  const M = window.MOCK;
+  const candidates = (M.WOS || []).filter(w => w.aiEstimate);
+  const [selectedId, setSelectedId] = React.useState(() => {
+    const flagged = candidates.find(w => w.aiEstimate?.flaggedForReview);
+    return (flagged || candidates[0])?.id || null;
+  });
+  const wo = candidates.find(w => w.id === selectedId);
+  const isMobile = typeof window !== "undefined" && window.matchMedia("(max-width: 720px)").matches;
+
+  const handleAction = (action, payload) => {
+    if (action === "approve") {
+      window.toast?.({ kind: "success", title: "Estimate approved", msg: `${wo?.id} routed to vendor at ${payload?.markupPct ?? 12}% markup.` });
+    } else if (action === "human-review") {
+      window.toast?.({ kind: "info", title: "Routed to human reviewer", msg: `${wo?.id} sent to Daedalus Ops queue.` });
+    } else if (action === "edit") {
+      window.toast?.({ kind: "info", title: "Edit estimate", msg: "Opening line-item editor (stub for prototype)." });
+    }
+  };
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "320px 1fr", gap: 14 }}>
+      {/* Queue list */}
+      <div className="card" style={{ padding: 0, overflow: "hidden", maxHeight: isMobile ? "none" : 640, display: "flex", flexDirection: "column" }}>
+        <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--line)", background: "var(--surface-2)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div className="muted" style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>Review queue</div>
+          <span className="pill pill-warn" style={{ fontSize: 10 }}>{candidates.filter(c => c.aiEstimate?.flaggedForReview).length} flagged</span>
+        </div>
+        <div style={{ overflowY: "auto", flex: 1 }}>
+          {candidates.map(c => {
+            const prop = M.PROPERTIES.find(p => p.id === c.property);
+            const active = c.id === selectedId;
+            return (
+              <button key={c.id} onClick={() => setSelectedId(c.id)} style={{
+                display: "block", width: "100%", textAlign: "left", padding: "12px 14px", minHeight: 56,
+                background: active ? "rgba(176,134,84,0.08)" : "transparent",
+                borderLeft: active ? "3px solid var(--bronze)" : "3px solid transparent",
+                border: 0, borderBottom: "1px solid var(--line)", cursor: "pointer",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                  <div className="mono" style={{ fontSize: 11, color: "var(--bronze)", fontWeight: 600 }}>{c.id}</div>
+                  <span className="pill" style={{
+                    fontSize: 10, padding: "2px 8px",
+                    background: c.aiEstimate.confidence === "high" ? "rgba(122,139,76,0.16)" : c.aiEstimate.confidence === "medium" ? "rgba(208,138,46,0.14)" : "rgba(176,70,58,0.14)",
+                    color: c.aiEstimate.confidence === "high" ? "var(--olive)" : c.aiEstimate.confidence === "medium" ? "var(--amber)" : "var(--terracotta)",
+                  }}>{c.aiEstimate.confidence}</span>
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4, lineHeight: 1.3 }}>{c.title}</div>
+                <div className="muted" style={{ fontSize: 11, marginTop: 2 }}>{prop?.name} · {fmt$(c.aiEstimate.total || 0)}</div>
+                {c.aiEstimate.flaggedForReview && (
+                  <span className="pill pill-warn" style={{ marginTop: 6, fontSize: 10 }}>flagged</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Selected estimate panel */}
+      <div>
+        {wo ? (
+          <>
+            <div style={{ marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 8 }}>
+              <div>
+                <div className="mono" style={{ fontSize: 12, color: "var(--bronze)", fontWeight: 600 }}>{wo.id}</div>
+                <div className="h-serif" style={{ fontSize: 22, marginTop: 2 }}>{wo.title}</div>
+                <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>{M.PROPERTIES.find(p => p.id === wo.property)?.name} · {wo.category}</div>
+              </div>
+              <span className="pill pill-info" style={{ fontSize: 10 }}>Ops perspective</span>
+            </div>
+            {window.AIEstimatePanel && (() => {
+              const AIPanel = window.AIEstimatePanel;
+              return <AIPanel wo={wo} mode="ops" onAction={handleAction}/>;
+            })()}
+            <div style={{ marginTop: 14 }}>
+              <div className="muted" style={{ fontSize: 10, letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 600, marginBottom: 6 }}>Reviewer notes</div>
+              <textarea className="textarea" placeholder="Note any concerns or context for the vendor before routing…" style={{ width: "100%", minHeight: 80 }}/>
+            </div>
+          </>
+        ) : (
+          <div className="card" style={{ padding: 40, textAlign: "center" }}>
+            <div className="h-serif" style={{ fontSize: 18 }}>Nothing in the review queue</div>
+            <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>Estimates appear here when AI confidence falls below the PMC threshold.</div>
+          </div>
+        )}
       </div>
     </div>
   );
