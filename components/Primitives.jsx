@@ -74,6 +74,7 @@ const Icon = ({ name, size = 18, color = "currentColor", strokeWidth = 1.5, styl
     leaf:        <><path d="M11 20A7 7 0 0 1 4 13c0-5 3-9 9-11 1 4 1 7 0 10s-3 5-7 7"/><path d="M2 22c4-2 6-5 7-9"/></>,
     bolt:        <><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" fill="currentColor" stroke="none"/></>,
     pin:         <><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"/><circle cx="12" cy="9" r="2.5" fill="currentColor"/></>,
+    tag:         <><path d="M20.6 12.4 12.4 20.6a2 2 0 0 1-2.8 0l-7.2-7.2A2 2 0 0 1 1.8 12V4a2 2 0 0 1 2-2h8a2 2 0 0 1 1.4.6l7.4 7.4a2 2 0 0 1 0 2.4z"/><circle cx="6.5" cy="6.5" r="1.5" fill="currentColor"/></>,
   };
   const p = paths[name];
   if (!p) return null;
