@@ -9,6 +9,7 @@ const NAV = [
 { id: "field", label: "Field App", icon: "field", group: "main" },
 { id: "inbox", label: "Inbox", icon: "mail", group: "main", badge: 4 },
 { id: "saleshub", label: "Sales Hub", icon: "sparkles", group: "growth" },
+{ id: "consumer-market", label: "Consumer Market", icon: "grid", group: "growth" },
 { id: "techmarket", label: "Tech Marketplace", icon: "users", group: "growth", badge: "FUTURE" },
 { id: "pmc", label: "PMC View", icon: "shield", group: "growth" },
 { id: "compliance", label: "Compliance Vault", icon: "compliance", group: "ops" },
@@ -22,7 +23,6 @@ const NAV = [
 { id: "claim", label: "Claim Job (tech, W-2)", icon: "zap", group: "flows" },
 { id: "bid", label: "Bid on Job (tech, 1099)", icon: "money", group: "flows" },
 { id: "homeowner-bids", label: "Compare Bids (homeowner)", icon: "list", group: "flows" },
-{ id: "consumer-market", label: "Consumer Market (GC)", icon: "sparkles", group: "flows" },
 { id: "tech-consent", label: "Tech Consent (modal)", icon: "shield", group: "flows" },
 { id: "tech-incoming", label: "Tech Incoming Job (modal)", icon: "zap", group: "flows" },
 { id: "apply", label: "Apply as Contractor", icon: "shield", group: "flows" }];
@@ -32,7 +32,7 @@ const NAV = [
 // admin/demo-only). Order is preserved by NAV — this list is just a filter.
 const DAEDALUS_PRO_NAV_IDS = [
   "home", "workorders", "bids", "dispatcher", "schedule", "field",
-  "inbox", "saleshub", "pmc", "compliance", "scorecard",
+  "inbox", "saleshub", "consumer-market", "pmc", "compliance", "scorecard",
   "team", "invoices", "factoring", "reports", "integrations", "apply"
 ];
 
